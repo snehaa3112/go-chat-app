@@ -156,7 +156,7 @@
                 return;
             }
 
-            fetch(`http://localhost:8080/join?id=${encodeURIComponent(username)}`)
+            fetch(`https://go-chat-app-eu0m.onrender.com/join?id=${encodeURIComponent(username)}`)
                 .then(response => response.text())
                 .then(data => {
                     alert(data);
@@ -178,7 +178,7 @@
             let message = document.getElementById("message").value;
             if (message.trim() === "") return;
         
-            fetch(`http://localhost:8080/send?id=${username}&message=${encodeURIComponent(message)}`)
+            fetch(`https://go-chat-app-eu0m.onrender.com/send?id=${username}&message=${encodeURIComponent(message)}`)
                 .then(response => response.text())
                 .then(data => {
                     console.log(data);
@@ -192,7 +192,7 @@
 
         function listenForMessages() {
             setInterval(() => {
-                fetch(`http://localhost:8080/messages?id=${username}`)
+                fetch(`https://go-chat-app-eu0m.onrender.com/messages?id=${username}`)
                     .then(response => response.text())
                     .then(data => {
                         if (data.trim()) {
@@ -205,7 +205,7 @@
         
 
         function leaveChat() {
-            fetch(`http://localhost:8080/leave?id=${username}`)
+            fetch(`https://go-chat-app-eu0m.onrender.com/leave?id=${username}`)
                 .then(response => response.text())
                 .then(data => alert(data));
 
@@ -213,7 +213,7 @@
         }
 
         function loadHistory() {
-            fetch(`http://localhost:8080/history`)
+            fetch(`https://go-chat-app-eu0m.onrender.com/history`)
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById("history").innerHTML = `<pre>${data}</pre>`;
