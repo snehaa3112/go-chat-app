@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Chat App</title>
+    <style>
+        /* Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #chat {
+            width: 40%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        input {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button.join {
+            background: #28a745;
+            color: white;
+        }
+
+        button.send {
+            background: #007bff;
+            color: white;
+        }
+
+        button.leave {
+            background: #dc3545;
+            color: white;
+        }
+
+        button.history {
+            background: #ffc107;
+            color: black;
+        }
+
+        #chatBox {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #messages {
+            height: 250px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            margin-bottom: 10px;
+            background: #fff;
+            border-radius: 5px;
+        }
+
+        #messages p {
+            background: #e3f2fd;
+            padding: 8px;
+            border-radius: 5px;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        /* Message Animation */
+        @keyframes slideIn {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Chat Box Fade-In */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat">
+        <h2>My Chat App</h2>
+        
+        <input type="text" id="username" placeholder="Enter your name">
+        <button onclick="joinChat()">Join</button>
+        
+        <div id="chatBox" style="display:none;">
+            <div id="messages"></div>
+
+            <input type="text" id="message" placeholder="Type a message">
+            <button onclick="sendMessage()">Send</button>
+            <button onclick="leaveChat()">Leave</button>
+
+            <h3>Chat History</h3>
+            <button onclick="loadHistory()">Load History</button>
+            <div id="history"></div>
+        </div>
+    </div>
+
+    <script>
+        let username = "";
+
+        let isListening = false; 
+
+        function joinChat() {
+            username = document.getElementById("username").value;
+            if (!username) {
+                alert("Please enter a username!");
+                return;
+            }
+
+            fetch(`http://localhost:8080/join?id=${encodeURIComponent(username)}`)
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    document.getElementById("chatBox").style.display = "block";
+
+                    if (!isListening) { 
+                        listenForMessages();
+                        isListening = true;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Failed to join chat.");
+                });
+        }
+
+
+        function sendMessage() {
+            let message = document.getElementById("message").value;
+            if (message.trim() === "") return;
+        
+            fetch(`http://localhost:8080/send?id=${username}&message=${encodeURIComponent(message)}`)
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById("messages").innerHTML += `<p><strong>${username}:</strong> ${message}</p>`; 
+                })
+                .catch(error => console.error("Error sending message:", error));
+        
+            document.getElementById("message").value = "";
+        }
+        
+
+        function listenForMessages() {
+            setInterval(() => {
+                fetch(`http://localhost:8080/messages?id=${username}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.trim()) {
+                            document.getElementById("messages").innerHTML += `<p>${data}</p>`;
+                        }
+                    })
+                    .catch(error => console.error("Error fetching messages:", error));
+            }, 2000); // Poll every 2 seconds
+        }
+        
+
+        function leaveChat() {
+            fetch(`http://localhost:8080/leave?id=${username}`)
+                .then(response => response.text())
+                .then(data => alert(data));
+
+            document.getElementById("chatBox").style.display = "none";
+        }
+
+        function loadHistory() {
+            fetch(`http://localhost:8080/history`)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("history").innerHTML = `<pre>${data}</pre>`;
+                });
+        }
+    </script>
+
+</body>
+</html>
