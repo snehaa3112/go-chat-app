@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 )
 
 // CORS middleware
@@ -74,12 +75,17 @@ func getChatHistoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := os.Getenv("PORT") 
+	if port == "" {
+		port = "8080" // Default for local testing
+	}
+
 	http.HandleFunc("/join", enableCORS(joinChatHandler))
 	http.HandleFunc("/send", enableCORS(sendMessageHandler))
 	http.HandleFunc("/leave", enableCORS(leaveChatHandler))
 	http.HandleFunc("/messages", enableCORS(getMessagesHandler))
 	http.HandleFunc("/history", enableCORS(getChatHistoryHandler))
 
-	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Server started at :" + port)
+	http.ListenAndServe(":"+port, nil)
 }
